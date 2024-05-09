@@ -1,40 +1,44 @@
-import Link from "next/link";
-import { headers } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import { SubmitButton } from "./submit-button";
+import Link from 'next/link'
+import { headers, cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import Loginform from '@/components/loginform'
 
 export default function Login({
   searchParams,
 }: {
-  searchParams: { message: string };
+  searchParams: { message: string }
 }) {
   const signIn = async (formData: FormData) => {
-    "use server";
+    'use server'
 
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const supabase = createClient();
-
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const cookieStore = cookies()
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    });
+    })
 
     if (error) {
-      return redirect("/login?message=Could not authenticate user");
+      return redirect('/login?message=Could not authenticate user')
     }
 
-    return redirect("/protected");
-  };
+    return redirect('/')
+  }
+
+ 
+  
 
   const signUp = async (formData: FormData) => {
-    "use server";
+    'use server'
 
-    const origin = headers().get("origin");
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const supabase = createClient();
+    const origin = headers().get('origin')
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const cookieStore = cookies()
+    const supabase = createClient()
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -42,17 +46,18 @@ export default function Login({
       options: {
         emailRedirectTo: `${origin}/auth/callback`,
       },
-    });
+    })
 
     if (error) {
-      return redirect("/login?message=Could not authenticate user");
+      return redirect('/login?message=Could not authenticate user')
     }
 
-    return redirect("/login?message=Check email to continue sign in process");
-  };
+    return redirect('/login?message=Check email to continue sign in process')
+  }
 
   return (
-    <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
+   <div className='justify-center flex pt-[90px]'>
+     <div className="flex-1 pt-10  flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Link
         href="/"
         className="absolute left-8 top-8 py-2 px-4 rounded-md no-underline text-foreground bg-btn-background hover:bg-btn-background-hover flex items-center group text-sm"
@@ -70,11 +75,17 @@ export default function Login({
           className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1"
         >
           <polyline points="15 18 9 12 15 6" />
-        </svg>{" "}
+        </svg>{' '}
         Back
       </Link>
+      <h3 className="text-3xl font-extrabold mb-8 max-md:text-center">
+              Sign in
+            </h3>
 
-      <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
+      <form
+        className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
+        action={signIn}
+      >
         <label className="text-md" htmlFor="email">
           Email
         </label>
@@ -94,26 +105,38 @@ export default function Login({
           placeholder="••••••••"
           required
         />
-        <SubmitButton
-          formAction={signIn}
-          className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing In..."
-        >
+         <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                <label htmlFor="remember-me" className="ml-3 block text-sm">
+                  Remember me
+                </label>
+              </div>
+              <div className="text-sm">
+                <a href="jajvascript:void(0);" className="text-blue-600 hover:text-blue-500">
+                  Forgot your password?
+                </a>
+              </div>
+            </div>
+        <button className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2">
           Sign In
-        </SubmitButton>
-        <SubmitButton
+        </button>
+        <button
           formAction={signUp}
           className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing Up..."
         >
           Sign Up
-        </SubmitButton>
+        </button>
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}
           </p>
         )}
       </form>
+      <p className="my-4 text-sm text-gray-400 text-center">or continue with</p>
+      <Loginform/>
     </div>
-  );
+   </div>
+  )
 }
+ 
